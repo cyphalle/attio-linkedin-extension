@@ -1,0 +1,249 @@
+/* ── Attio LinkedIn Connector overlay ──────────────────────────
+   All classes prefixed with attio-ext- to avoid collision with LinkedIn.
+*/
+
+#attio-ext-overlay {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #1a1a2e;
+}
+
+/* ── Panel ───────────────────────────────────────────────────── */
+
+.attio-ext-panel {
+  width: 320px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.15), 0 1px 3px rgba(0,0,0,.08);
+  overflow: hidden;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+
+.attio-ext-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #4f46e5;
+  color: #fff;
+}
+
+.attio-ext-logo {
+  width: 24px;
+  height: 24px;
+  background: rgba(255,255,255,.2);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.attio-ext-title {
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
+}
+
+.attio-ext-minimize {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: .7;
+  padding: 0 2px;
+  line-height: 1;
+}
+.attio-ext-minimize:hover { opacity: 1; }
+
+/* ── Body ────────────────────────────────────────────────────── */
+
+.attio-ext-body {
+  padding: 14px;
+}
+
+/* ── Badges ──────────────────────────────────────────────────── */
+
+.attio-ext-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.attio-ext-badge-green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.attio-ext-badge-orange {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.attio-ext-badge-red {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* ── Fields (found state) ────────────────────────────────────── */
+
+.attio-ext-field {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.attio-ext-field-label {
+  color: #888;
+  min-width: 50px;
+  flex-shrink: 0;
+}
+
+.attio-ext-field-value {
+  color: #1a1a2e;
+  word-break: break-word;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+
+.attio-ext-btn {
+  display: block;
+  width: 100%;
+  padding: 9px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background .15s;
+}
+
+.attio-ext-btn-primary {
+  background: #4f46e5;
+  color: #fff;
+}
+.attio-ext-btn-primary:hover { background: #4338ca; }
+.attio-ext-btn-primary:disabled {
+  background: #a5b4fc;
+  cursor: not-allowed;
+}
+
+.attio-ext-btn-secondary {
+  background: #f3f4f6;
+  color: #333;
+}
+.attio-ext-btn-secondary:hover { background: #e5e7eb; }
+
+/* ── Spinner ─────────────────────────────────────────────────── */
+
+.attio-ext-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: attio-ext-spin .7s linear infinite;
+  margin: 8px auto;
+}
+
+@keyframes attio-ext-spin {
+  to { transform: rotate(360deg); }
+}
+
+.attio-ext-body p {
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+  margin: 4px 0;
+}
+
+/* ── Error ────────────────────────────────────────────────────── */
+
+.attio-ext-error-msg {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 8px;
+  text-align: left !important;
+}
+
+/* ── Form (not-found state) ──────────────────────────────────── */
+
+.attio-ext-form input,
+.attio-ext-form select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.attio-ext-form input:focus,
+.attio-ext-form select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79,70,229,.12);
+}
+
+.attio-ext-form input[readonly] {
+  background: #f9fafb;
+  color: #888;
+  cursor: default;
+}
+
+.attio-ext-form-row {
+  display: flex;
+  gap: 8px;
+}
+.attio-ext-form-row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.attio-ext-form-status {
+  font-size: 12px;
+  margin-top: 6px;
+  min-height: 16px;
+}
+.attio-ext-form-err {
+  color: #dc2626;
+}
+
+/* ── FAB (minimized state) ───────────────────────────────────── */
+
+.attio-ext-fab {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(79,70,229,.35);
+  transition: transform .15s, box-shadow .15s;
+}
+.attio-ext-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(79,70,229,.45);
+}

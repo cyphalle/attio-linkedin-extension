@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attio LinkedIn Connector — Settings</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 560px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #1a1a2e;
+      line-height: 1.5;
+    }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .subtitle { color: #666; font-size: 14px; margin-bottom: 32px; }
+    .field { margin-bottom: 20px; }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #555;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color .15s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+    }
+    .row { display: flex; gap: 10px; align-items: flex-end; }
+    .row input { flex: 1; }
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-primary {
+      background: #4f46e5;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #333;
+    }
+    .btn-secondary:hover { background: #d1d5db; }
+    .status {
+      margin-top: 8px;
+      font-size: 13px;
+      min-height: 20px;
+    }
+    .status.ok { color: #16a34a; }
+    .status.err { color: #dc2626; }
+    .divider {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 28px 0;
+    }
+    .note {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Attio LinkedIn Connector</h1>
+  <p class="subtitle">Configure your Attio CRM connection.</p>
+
+  <!-- API Key -->
+  <div class="field">
+    <label for="apiKey">Attio API Key</label>
+    <div class="row">
+      <input type="password" id="apiKey" placeholder="attio_…">
+      <button id="testBtn" class="btn-secondary">Test</button>
+    </div>
+    <div id="apiStatus" class="status"></div>
+    <p class="note">Find your API key in <strong>Attio → Settings → API</strong>.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Default list -->
+  <div class="field">
+    <label for="listSelect">Default List</label>
+    <select id="listSelect" disabled>
+      <option value="">— test connection first —</option>
+    </select>
+  </div>
+
+  <!-- Default status -->
+  <div class="field">
+    <label for="statusSelect">Default Status</label>
+    <select id="statusSelect" disabled>
+      <option value="">— select a list first —</option>
+    </select>
+  </div>
+
+  <hr class="divider">
+
+  <button id="saveBtn" class="btn-primary">Save Settings</button>
+  <div id="saveStatus" class="status"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

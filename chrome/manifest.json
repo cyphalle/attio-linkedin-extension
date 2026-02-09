@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Attio LinkedIn Connector",
+  "version": "1.0.0",
+  "description": "Connect LinkedIn profiles to your Attio CRM — check existing contacts or add new ones.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["https://api.attio.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/in/*"],
+      "js": ["lib/normalize.js", "lib/linkedin-scraper.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
