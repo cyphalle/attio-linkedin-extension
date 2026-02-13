@@ -10,6 +10,7 @@ function getSettings() {
     chrome.storage.sync.get(
       [
         "attioApiKey",
+        "workspaceSlug",
         "defaultListId",
         "defaultListName",
         "defaultStatusId",
@@ -121,8 +122,7 @@ async function createPerson({
 }) {
   const api = await getApi();
   const values = {
-    first_name: [{ value: firstName }],
-    last_name: [{ value: lastName }],
+    name: [{ first_name: firstName, last_name: lastName, full_name: `${firstName} ${lastName}` }],
   };
   if (linkedinUrl) values.linkedin = [{ value: linkedinUrl }];
   if (jobTitle) values.job_title = [{ value: jobTitle }];

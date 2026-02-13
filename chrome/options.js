@@ -14,12 +14,14 @@ const saveStatus = $("#saveStatus");
 // Cache fetched data so we don't re-fetch on every interaction
 let listsCache = [];
 let attributesCache = [];
+let detectedWorkspaceSlug = "";
 
 // ── Load saved settings on open ─────────────────────────────────
 
 chrome.storage.sync.get(
   [
     "attioApiKey",
+    "workspaceSlug",
     "defaultListId",
     "defaultListName",
     "defaultStatusId",
@@ -29,6 +31,9 @@ chrome.storage.sync.get(
   async (settings) => {
     if (settings.attioApiKey) {
       apiKeyInput.value = settings.attioApiKey;
+      // Restore cached workspace slug, then refresh it
+      detectedWorkspaceSlug = settings.workspaceSlug || "";
+      await fetchWorkspaceSlug(settings.attioApiKey);
       // Auto-load lists if key is already saved
       await loadLists(settings.attioApiKey);
       // Restore saved list selection
@@ -53,6 +58,7 @@ testBtn.addEventListener("click", async () => {
   }
   showStatus(apiStatus, "Testing…", "");
   try {
+    await fetchWorkspaceSlug(key);
     await loadLists(key);
     showStatus(apiStatus, `Connected — ${listsCache.length} list(s) found.`, "ok");
   } catch (err) {
@@ -89,6 +95,7 @@ saveBtn.addEventListener("click", () => {
 
   const data = {
     attioApiKey: key,
+    workspaceSlug: detectedWorkspaceSlug,
     defaultListId: listSelect.value || "",
     defaultListName: listOption?.textContent || "",
     defaultStatusId: statusSelect.value || "",
@@ -102,6 +109,22 @@ saveBtn.addEventListener("click", () => {
 });
 
 // ── Helpers ─────────────────────────────────────────────────────
+
+async function fetchWorkspaceSlug(apiKey) {
+  try {
+    const res = await fetch("https://api.attio.com/v2/self", {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    detectedWorkspaceSlug = json.workspace_slug || json.data?.workspace_slug || "";
+  } catch {
+    // Non-critical — link will fall back to generic URL
+  }
+}
 
 async function loadLists(apiKey) {
   const res = await fetch("https://api.attio.com/v2/lists", {

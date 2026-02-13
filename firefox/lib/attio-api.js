@@ -59,6 +59,12 @@ class AttioAPI {
     });
   }
 
+  // ── Workspace ───────────────────────────────────────────────────
+
+  async getWorkspace() {
+    return this._get("/self");
+  }
+
   // ── Lists ─────────────────────────────────────────────────────
 
   async listLists() {

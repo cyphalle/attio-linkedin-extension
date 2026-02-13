@@ -59,7 +59,8 @@
       }
 
       if (res.found) {
-        showOverlay("found", { person: res.person, recordId: res.recordId });
+        const settings = await sendMessage({ action: "GET_SETTINGS" });
+        showOverlay("found", { person: res.person, recordId: res.recordId, workspaceSlug: settings.workspaceSlug });
       } else {
         showOverlay("not-found", { scraped: data });
       }
@@ -95,7 +96,10 @@
             <p>Checking Attio…</p>
           </div>`;
 
-      case "found":
+      case "found": {
+        const base = data.workspaceSlug
+          ? `https://app.attio.com/${data.workspaceSlug}`
+          : "https://app.attio.com";
         return `${header}
           <div class="${EXT_ID}-body">
             <div class="${EXT_ID}-badge ${EXT_ID}-badge-green">In CRM</div>
@@ -103,9 +107,10 @@
             ${fieldRow("Title", data.person.jobTitle)}
             ${fieldRow("Email", data.person.email)}
             <a class="${EXT_ID}-btn ${EXT_ID}-btn-primary"
-               href="https://app.attio.com/people/${data.recordId}"
+               href="${base}/person/${data.recordId}"
                target="_blank">Open in Attio</a>
           </div>`;
+      }
 
       case "not-found":
         return `${header}
@@ -344,6 +349,7 @@
       }
 
       // 3) Show found state
+      const settings = await sendMessage({ action: "GET_SETTINGS" });
       showOverlay("found", {
         person: {
           firstName,
@@ -353,6 +359,7 @@
           linkedin: linkedinUrl,
         },
         recordId,
+        workspaceSlug: settings.workspaceSlug,
       });
     } catch (err) {
       statusEl.textContent = err.message;
