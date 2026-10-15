@@ -5,21 +5,56 @@ importScripts("lib/normalize.js", "lib/attio-api.js");
 
 // ── Settings helpers ────────────────────────────────────────────
 
-function getSettings() {
+const SETTINGS_KEYS = [
+  "attioApiKey",
+  "workspaceSlug",
+  "defaultListId",
+  "defaultListName",
+  "defaultStatusId",
+  "defaultStatusSlug",
+  "defaultStatusTitle",
+];
+
+// Settings the content script may read. The API key is never sent to a web page.
+const PUBLIC_SETTINGS_KEYS = SETTINGS_KEYS.filter((k) => k !== "attioApiKey");
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SLUG_RE = /^[A-Za-z0-9_-]{1,128}$/;
+
+// Settings used to live in storage.sync, which replicates the API key to every
+// signed-in browser. Move them to storage.local once, then delete the sync copy.
+let migration = null;
+function migrateSettings() {
+  if (!migration) {
+    migration = new Promise((resolve) => {
+      chrome.storage.sync.get(SETTINGS_KEYS, (synced) => {
+        if (!synced || Object.keys(synced).length === 0) return resolve();
+        chrome.storage.local.get(SETTINGS_KEYS, (local) => {
+          const toCopy = local.attioApiKey ? {} : synced;
+          chrome.storage.local.set(toCopy, () => {
+            chrome.storage.sync.remove(SETTINGS_KEYS, () => resolve());
+          });
+        });
+      });
+    });
+  }
+  return migration;
+}
+chrome.runtime.onInstalled.addListener(() => migrateSettings());
+chrome.runtime.onStartup.addListener(() => migrateSettings());
+
+async function getSettings() {
+  await migrateSettings();
   return new Promise((resolve) => {
-    chrome.storage.sync.get(
-      [
-        "attioApiKey",
-        "workspaceSlug",
-        "defaultListId",
-        "defaultListName",
-        "defaultStatusId",
-        "defaultStatusSlug",
-        "defaultStatusTitle",
-      ],
-      resolve
-    );
+    chrome.storage.local.get(SETTINGS_KEYS, resolve);
   });
+}
+
+async function getPublicSettings() {
+  const s = await getSettings();
+  const out = {};
+  for (const k of PUBLIC_SETTINGS_KEYS) out[k] = s[k];
+  return out;
 }
 
 function getApi() {
@@ -29,9 +64,44 @@ function getApi() {
   });
 }
 
+function assertUuid(value, name) {
+  if (typeof value !== "string" || !UUID_RE.test(value)) {
+    throw Object.assign(new Error(`Invalid ${name}.`), { code: "BAD_INPUT" });
+  }
+}
+
+function sanitizeEntryValues(entryValues) {
+  const out = {};
+  if (!entryValues || typeof entryValues !== "object") return out;
+  for (const [slug, statusId] of Object.entries(entryValues)) {
+    if (!SLUG_RE.test(slug)) throw Object.assign(new Error("Invalid attribute slug."), { code: "BAD_INPUT" });
+    assertUuid(statusId, "status id");
+    out[slug] = statusId;
+  }
+  return out;
+}
+
+// Accept messages only from this extension's own pages or from its content
+// script running on a LinkedIn page.
+function isTrustedSender(sender) {
+  if (!sender || sender.id !== chrome.runtime.id) return false;
+  const url = sender.url || sender.tab?.url || "";
+  if (url.startsWith(chrome.runtime.getURL(""))) return true;
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && u.hostname === "www.linkedin.com";
+  } catch {
+    return false;
+  }
+}
+
 // ── Message handler ─────────────────────────────────────────────
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (!isTrustedSender(sender)) {
+    sendResponse({ error: "Untrusted sender." });
+    return false;
+  }
   handleMessage(msg).then(sendResponse).catch((err) => {
     console.error("[attio-ext] background error:", err);
     sendResponse({
@@ -56,7 +126,7 @@ async function handleMessage(msg) {
     case "GET_LIST_ATTRIBUTES":
       return getListAttributes(msg);
     case "GET_SETTINGS":
-      return getSettings();
+      return getPublicSettings();
     default:
       throw new Error(`Unknown action: ${msg.action}`);
   }
@@ -138,8 +208,11 @@ async function createPerson({
 }
 
 async function addToList({ recordId, listId, entryValues }) {
+  assertUuid(recordId, "record id");
+  assertUuid(listId, "list id");
+  const values = sanitizeEntryValues(entryValues);
   const api = await getApi();
-  await api.addToList(listId, recordId, entryValues || {});
+  await api.addToList(listId, recordId, values);
   return { success: true };
 }
 
@@ -150,6 +223,7 @@ async function getLists() {
 }
 
 async function getListAttributes({ listId }) {
+  assertUuid(listId, "list id");
   const api = await getApi();
   const res = await api.getListAttributes(listId);
   return { attributes: res?.data ?? [] };
@@ -158,7 +232,7 @@ async function getListAttributes({ listId }) {
 // ── Error formatting ────────────────────────────────────────────
 
 function friendlyError(err) {
-  if (err.code === "NO_API_KEY") return err.message;
+  if (err.code === "NO_API_KEY" || err.code === "BAD_INPUT") return err.message;
   switch (err.status) {
     case 400:
       return `Bad request: ${err.body || err.message}`;

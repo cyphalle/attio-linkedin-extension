@@ -1,5 +1,5 @@
 /**
- * Attio API v2 wrapper — mirrors domains/sales/clients/attio.py
+ * Attio API v2 wrapper.
  */
 class AttioAPI {
   constructor(apiKey) {
@@ -72,11 +72,11 @@ class AttioAPI {
   }
 
   async getListAttributes(listId) {
-    return this._get(`/lists/${listId}/attributes`);
+    return this._get(`/lists/${encodeURIComponent(listId)}/attributes`);
   }
 
   async addToList(listId, recordId, entryValues = {}) {
-    return this._post(`/lists/${listId}/entries`, {
+    return this._post(`/lists/${encodeURIComponent(listId)}/entries`, {
       data: {
         parent_record_id: recordId,
         parent_object: "people",
@@ -89,7 +89,6 @@ class AttioAPI {
 
   /**
    * Extract a single value from Attio's nested values structure.
-   * Port of dedup.py:_extract_attio_value
    */
   static extractValue(record, fieldName) {
     const values = record?.values?.[fieldName];

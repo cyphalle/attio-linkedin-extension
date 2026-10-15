@@ -18,16 +18,31 @@ let detectedWorkspaceSlug = "";
 
 // ── Load saved settings on open ─────────────────────────────────
 
-chrome.storage.sync.get(
-  [
-    "attioApiKey",
-    "workspaceSlug",
-    "defaultListId",
-    "defaultListName",
-    "defaultStatusId",
-    "defaultStatusSlug",
-    "defaultStatusTitle",
-  ],
+const SETTINGS_KEYS = [
+  "attioApiKey",
+  "workspaceSlug",
+  "defaultListId",
+  "defaultListName",
+  "defaultStatusId",
+  "defaultStatusSlug",
+  "defaultStatusTitle",
+];
+
+// Settings are kept in storage.local: storage.sync would replicate the API key
+// to every browser signed into the same account. Move any older sync copy once.
+function loadSettings(callback) {
+  chrome.storage.sync.get(SETTINGS_KEYS, (synced) => {
+    chrome.storage.local.get(SETTINGS_KEYS, (local) => {
+      if (!synced || Object.keys(synced).length === 0) return callback(local);
+      const merged = local.attioApiKey ? local : { ...synced, ...local };
+      chrome.storage.local.set(merged, () => {
+        chrome.storage.sync.remove(SETTINGS_KEYS, () => callback(merged));
+      });
+    });
+  });
+}
+
+loadSettings(
   async (settings) => {
     if (settings.attioApiKey) {
       apiKeyInput.value = settings.attioApiKey;
@@ -103,7 +118,7 @@ saveBtn.addEventListener("click", () => {
     defaultStatusTitle: statusOption?.textContent || "",
   };
 
-  chrome.storage.sync.set(data, () => {
+  chrome.storage.local.set(data, () => {
     showStatus(saveStatus, "Settings saved.", "ok");
   });
 });
@@ -151,7 +166,7 @@ async function loadStatuses(apiKey, listId) {
   statusSelect.innerHTML = '<option value="">Loading…</option>';
   statusSelect.disabled = true;
 
-  const res = await fetch(`https://api.attio.com/v2/lists/${listId}/attributes`, {
+  const res = await fetch(`https://api.attio.com/v2/lists/${encodeURIComponent(listId)}/attributes`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",

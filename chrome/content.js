@@ -98,7 +98,7 @@
 
       case "found": {
         const base = data.workspaceSlug
-          ? `https://app.attio.com/${data.workspaceSlug}`
+          ? `https://app.attio.com/${encodeURIComponent(data.workspaceSlug)}`
           : "https://app.attio.com";
         return `${header}
           <div class="${EXT_ID}-body">
@@ -107,8 +107,8 @@
             ${fieldRow("Title", data.person.jobTitle)}
             ${fieldRow("Email", data.person.email)}
             <a class="${EXT_ID}-btn ${EXT_ID}-btn-primary"
-               href="${base}/person/${data.recordId}"
-               target="_blank">Open in Attio</a>
+               href="${escapeAttr(`${base}/person/${encodeURIComponent(data.recordId || "")}`)}"
+               target="_blank" rel="noopener noreferrer">Open in Attio</a>
           </div>`;
       }
 
@@ -183,7 +183,6 @@
     const settingsBtn = overlay.querySelector(`.${EXT_ID}-open-settings`);
     if (settingsBtn) {
       settingsBtn.addEventListener("click", () => {
-        chrome.runtime.sendMessage({ action: "GET_SETTINGS" }); // noop, just to verify
         window.open(chrome.runtime.getURL("options.html"), "_blank");
       });
     }
@@ -289,7 +288,7 @@
     submitBtn.textContent = "Creating…";
     statusEl.textContent = "";
 
-    // Build description from extra scraped data (mirrors import_attio.py)
+    // Build description from extra scraped data
     const descParts = [];
     if (scraped.about) descParts.push(`About: ${scraped.about}`);
     if (company) descParts.push(`Company: ${company}`);
