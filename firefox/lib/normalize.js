@@ -1,6 +1,5 @@
 /**
  * Normalize a LinkedIn profile URL to its slug.
- * Port of dedup.py:normalize_linkedin_url
  *
  * "https://www.linkedin.com/in/john-doe?foo=bar" → "john-doe"
  */
